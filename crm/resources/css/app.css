@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Alpine.js cloak support */
+[x-cloak] { display: none !important; }
+
+/* Sidebar gradient */
+.bg-sidebar-gradient {
+    background: linear-gradient(180deg, #4A3050 0%, #3a2540 100%);
+}
