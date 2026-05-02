@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+        <testsuite name="Stripe">
+            <directory>tests/Feature/Stripe</directory>
+            <directory>tests/Unit/Services</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+    </source>
+    <php>
+        <env name="APP_ENV"              value="testing"/>
+        <env name="APP_KEY"              value="base64:testkey000000000000000000000000000="/>
+        <env name="DB_CONNECTION"        value="sqlite"/>
+        <env name="DB_DATABASE"          value=":memory:"/>
+        <env name="CACHE_STORE"          value="array"/>
+        <env name="SESSION_DRIVER"       value="array"/>
+        <env name="QUEUE_CONNECTION"     value="sync"/>
+        <env name="MAIL_MAILER"          value="array"/>
+        <!-- Stripe test keys — override in .env.testing for real API calls -->
+        <env name="STRIPE_KEY"           value="pk_test_dummy"/>
+        <env name="STRIPE_SECRET"        value="sk_test_dummy"/>
+        <env name="STRIPE_WEBHOOK_SECRET" value="whsec_test_secret"/>
+        <env name="CASHIER_CURRENCY"     value="gbp"/>
+    </php>
+</phpunit>
