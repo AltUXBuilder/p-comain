@@ -1,31 +1,33 @@
 <?php
 
+/**
+ * PATCH — FortifyServiceProvider.php
+ *
+ * Replace the existing authenticateUsing() closure in app/Providers/FortifyServiceProvider.php
+ * with the version below to add suspicious login detection.
+ *
+ * The only change is calling SuspiciousLoginDetector::analyse() on successful login.
+ */
+
 namespace App\Providers;
 
-use App\Actions\Fortify\AuthenticateStaff;
 use App\Models\Staff;
+use App\Services\SuspiciousLoginDetector;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Fortify\Fortify;
 
 class FortifyServiceProvider extends ServiceProvider
 {
-    public function register(): void
-    {
-        //
-    }
+    public function register(): void {}
 
     public function boot(): void
     {
-        // ── Views ────────────────────────────────────────────────────────────
-
         Fortify::loginView(fn () => view('auth.login'));
-
         Fortify::twoFactorChallengeView(fn () => view('auth.two-factor-challenge'));
-
-        // ── Custom authentication — log every attempt ─────────────────────
 
         Fortify::authenticateUsing(function (Request $request) {
             $staff = Staff::where('email', strtolower($request->email))->first();
@@ -35,7 +37,7 @@ class FortifyServiceProvider extends ServiceProvider
                 return null;
             }
 
-            if (! \Illuminate\Support\Facades\Hash::check($request->password, $staff->password)) {
+            if (! Hash::check($request->password, $staff->password)) {
                 \App\Models\SessionLog::recordAttempt($staff->id, $request, false, 'bad_password');
                 return null;
             }
@@ -45,13 +47,14 @@ class FortifyServiceProvider extends ServiceProvider
                 return null;
             }
 
-            // IP whitelist check happens in middleware — not here
+            // Record successful login
             \App\Models\SessionLog::recordAttempt($staff->id, $request, true, null);
+
+            // ── Suspicious login detection (Phase 17 addition) ────────────────
+            app(SuspiciousLoginDetector::class)->analyse($staff, $request);
 
             return $staff;
         });
-
-        // ── Rate limiting ────────────────────────────────────────────────────
 
         RateLimiter::for('login', function (Request $request) {
             $throttleKey = strtolower($request->input(Fortify::username())) . '|' . $request->ip();
