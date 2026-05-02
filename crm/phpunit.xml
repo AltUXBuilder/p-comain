@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         testdox="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+        <testsuite name="CRM">
+            <directory>tests/Feature/CRM</directory>
+        </testsuite>
+    </testsuites>
+
+    <coverage>
+        <include>
+            <directory>app</directory>
+        </include>
+        <exclude>
+            <directory>app/Http/Middleware</directory>
+        </exclude>
+    </coverage>
+
+    <php>
+        <env name="APP_ENV"          value="testing"/>
+        <env name="APP_DEBUG"        value="true"/>
+        <env name="APP_KEY"          value="base64:TEST_KEY_32_CHARACTERS_PADDED=="/>
+        <env name="DB_CONNECTION"    value="sqlite"/>
+        <env name="DB_DATABASE"      value=":memory:"/>
+        <env name="CACHE_STORE"      value="array"/>
+        <env name="SESSION_DRIVER"   value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="MAIL_MAILER"      value="array"/>
+        <env name="BCRYPT_ROUNDS"    value="4"/>
+        <!-- Disable IP whitelist checks in tests -->
+        <env name="CRM_IP_WHITELIST" value="127.0.0.1,::1"/>
+        <!-- Disable Stripe in tests -->
+        <env name="STRIPE_KEY"    value="sk_test_dummy"/>
+        <env name="STRIPE_SECRET" value="sk_test_dummy"/>
+    </php>
+</phpunit>

@@ -48,3 +48,21 @@ return [
     'session_lifetime' => 480, // 8 hours
 
 ];
+
+    // ── Additional config (Phase 19) ─────────────────────────────────────────
+    'consultation_review_threshold_hours' => env('CRM_CONSULTATION_REVIEW_THRESHOLD_HOURS', 24),
+ * Phase 8 addition — merge the 'pharmacy' key into config/crm.php
+ *
+ * Add this block inside the return array in config/crm.php:
+ */
+
+return [
+
+    // ... existing keys (ip_whitelist, gphc_regex, etc.) ...
+
+--
+    'pharmacy' => [
+        'name'        => env('PHARMACY_NAME',        'Prescribe & Co'),
+        'address'     => env('PHARMACY_ADDRESS',     ''),
+        'gphc_number' => env('PHARMACY_GPHC_NUMBER', ''),
+        'phone'       => env('PHARMACY_PHONE',       ''),
