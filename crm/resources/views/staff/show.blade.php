@@ -3,7 +3,7 @@
 
     <div class="max-w-2xl space-y-5 animate-fade-in">
 
-        <a href="{{ route('staff.index') }}" class="text-sm font-medium text-lilac-600 hover:text-lilac-800">← Back to staff</a>
+        <a href="{{ route('staff.index') }}" class="text-sm font-medium text-lilac-600 hover:text-lilac-800">← Staff</a>
 
         {{-- Profile card --}}
         <div class="rounded-2xl border border-plum-100 bg-white p-6 shadow-plum-sm">
@@ -18,7 +18,6 @@
                         <p class="mt-1 text-xs text-plum-500">{{ $staff->roleLabel() }}</p>
                     </div>
                 </div>
-
                 <div class="flex flex-col items-end gap-2">
                     @if($staff->trashed())
                         <span class="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-700">Deactivated</span>
@@ -58,6 +57,12 @@
                         <dd class="text-plum-700">{{ $staff->max_daily_consultations }}</dd>
                     </div>
                 @endif
+                @if($staff->out_of_office)
+                    <div class="col-span-2">
+                        <dt class="text-xs text-plum-400">Status</dt>
+                        <dd class="font-medium text-amber-600">Out of office</dd>
+                    </div>
+                @endif
             </dl>
         </div>
 
@@ -65,7 +70,6 @@
         <div class="rounded-2xl border border-plum-100 bg-white p-5 shadow-plum-sm">
             <h3 class="mb-4 text-sm font-semibold text-plum-700">Actions</h3>
             <div class="flex flex-wrap gap-2">
-
                 <a href="{{ route('staff.edit', $staff) }}"
                     class="rounded-xl border border-plum-200 px-4 py-2 text-sm text-plum-600 hover:bg-plum-50">
                     Edit account
@@ -107,23 +111,44 @@
                         </form>
                     @endif
                 @endif
-
             </div>
         </div>
 
-        {{-- Recent session log --}}
-        <div class="rounded-2xl border border-plum-100 bg-white shadow-plum-sm">
-            <div class="border-b border-plum-50 px-5 py-4">
-                <h3 class="text-sm font-semibold text-plum-700">Recent Login Activity</h3>
+        {{-- Suspicious login alerts --}}
+        @if($suspiciousAlerts->isNotEmpty())
+            <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 shadow-plum-sm">
+                <p class="mb-3 text-sm font-semibold text-amber-800">⚠ Suspicious Login Alerts (last 30 days)</p>
+                <div class="space-y-2">
+                    @foreach($suspiciousAlerts as $alert)
+                        <div class="flex items-center justify-between rounded-xl border border-amber-100 bg-white px-4 py-2">
+                            <div class="flex items-center gap-2">
+                                <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-amber-700">
+                                    {{ ucfirst(str_replace(['suspicious_login.', '_'], ['', ' '], $alert->action)) }}
+                                </span>
+                                <p class="text-xs text-plum-600">IP: {{ $alert->ip_address }}</p>
+                            </div>
+                            <p class="text-xs text-plum-400">{{ $alert->created_at->format('d M Y, H:i') }}</p>
+                        </div>
+                    @endforeach
+                </div>
             </div>
-            @forelse($staff->sessionLogs as $log)
+        @endif
+
+        {{-- Paginated session log --}}
+        <div class="rounded-2xl border border-plum-100 bg-white shadow-plum-sm">
+            <div class="flex items-center justify-between border-b border-plum-50 px-5 py-4">
+                <h3 class="text-sm font-semibold text-plum-700">Login Activity</h3>
+                <a href="{{ route('staff.sessions.index') }}" class="text-xs font-medium text-lilac-600 hover:text-lilac-800">All active sessions →</a>
+            </div>
+            @forelse($sessionLogs as $log)
                 <div class="flex items-center justify-between border-b border-plum-50 px-5 py-3 last:border-0">
                     <div class="flex items-center gap-3">
                         <span class="size-2 rounded-full {{ $log->success ? 'bg-green-500' : 'bg-red-400' }}"></span>
                         <div>
-                            <p class="text-xs font-medium text-plum-700">{{ $log->success ? 'Successful login' : 'Failed attempt' }}
+                            <p class="text-xs font-medium text-plum-700">
+                                {{ $log->success ? 'Successful login' : 'Failed attempt' }}
                                 @if($log->failure_reason)
-                                    <span class="text-plum-400 font-normal">— {{ str_replace('_', ' ', $log->failure_reason) }}</span>
+                                    <span class="font-normal text-plum-400">— {{ str_replace('_', ' ', $log->failure_reason) }}</span>
                                 @endif
                             </p>
                             <p class="text-xs text-plum-400">{{ $log->ip_address }}</p>
@@ -134,6 +159,11 @@
             @empty
                 <div class="px-5 py-8 text-center text-sm text-plum-400">No login activity recorded.</div>
             @endforelse
+            @if($sessionLogs->hasPages())
+                <div class="border-t border-plum-50 px-5 py-3">
+                    {{ $sessionLogs->links() }}
+                </div>
+            @endif
         </div>
 
     </div>
